@@ -169,6 +169,7 @@ template:
 	tcpdump,strace,libpam-systemd,ca-certificates,telnet,curl,ncurses-term,\
 	python,python2.7-dev,python-pip,tree,psmisc,\
 	bridge-utils,sudo,aptitude,ca-certificates,apt-transport-https,\
+	less,screen,ethtool,dstat,sysstat,cgmanager,tzdata,libpam0g,\
 	sudo,gcc,libffi-dev,libssl-dev,git \
 	stretch ${TOP_DIR}/mnt/tmp/ http://ftp.jp.debian.org/debian ; \
 	echo "root:root" | chpasswd --root ${TOP_DIR}/mnt/tmp/ ; \
