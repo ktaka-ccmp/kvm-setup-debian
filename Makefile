@@ -2,21 +2,21 @@
 TOP_DIR=/kvm
 SRC_DIR=${TOP_DIR}/SRC/
 
-KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.7.3.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.13.4.tar.xz
 KERNEL_FILE=$(notdir ${KERNEL_URI})
 KERNEL=$(KERNEL_FILE:.tar.xz=)
 KVER=$(subst linux-,,${KERNEL})
 KVER_MINOR=-64kvmg01
 
-BUSYBOX_URI=http://busybox.net/downloads/busybox-1.25.0.tar.bz2
+BUSYBOX_URI=http://busybox.net/downloads/busybox-1.27.2.tar.bz2
 BUSYBOX_FILE=$(notdir ${BUSYBOX_URI})
 BUSYBOX=$(BUSYBOX_FILE:.tar.bz2=)
 
-QEMU_URI=http://wiki.qemu-project.org/download/qemu-2.7.0.tar.bz2
+QEMU_URI=http://wiki.qemu-project.org/download/qemu-2.10.0.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
-TEMPLATE=template.jessie64
+TEMPLATE=template.stretch64
 
 default: 
 	@echo "Usage: make target "
@@ -125,6 +125,7 @@ qemu:
 	(cd ${SRC_DIR}/${QEMU}; \
 	./configure --prefix=${TOP_DIR}/qemu/${QEMU}/ --enable-kvm --enable-virtfs --target-list=x86_64-softmmu ; \
 	time make -j 20 install ;\
+	ln -sf ${TOP_DIR}/qemu/${QEMU} ${TOP_DIR}/qemu/qemu ;\
 	)
 
 .PHONY: busybox
@@ -169,7 +170,7 @@ template:
 	python,python2.7-dev,python-pip,tree,psmisc,\
 	bridge-utils,sudo,aptitude,ca-certificates,apt-transport-https,\
 	sudo,gcc,libffi-dev,libssl-dev,git \
-	jessie ${TOP_DIR}/mnt/tmp/ http://ftp.jp.debian.org/debian ; \
+	stretch ${TOP_DIR}/mnt/tmp/ http://ftp.jp.debian.org/debian ; \
 	echo "root:root" | chpasswd --root ${TOP_DIR}/mnt/tmp/ ; \
 	apt-get -o RootDir=${TOP_DIR}/mnt/tmp/ clean ;\
 	umount ${TOP_DIR}/mnt/tmp ;\
