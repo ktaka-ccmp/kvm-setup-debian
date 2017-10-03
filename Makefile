@@ -178,7 +178,7 @@ template:
 	apt-get -o RootDir=${TOP_DIR}/mnt/tmp/ clean ;\
 	umount ${TOP_DIR}/mnt/tmp ;\
 	fi
-	cp ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/data/template.img
+	(cd ${TOP_DIR}/data/; ln -sf ${TEMPLATE} template.img)
 	cp ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/data/test.img
 
 template-modify: hosts
