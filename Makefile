@@ -16,7 +16,9 @@ QEMU_URI=http://wiki.qemu-project.org/download/qemu-2.10.0.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
-TEMPLATE=template.stretch64
+DEBIAN=stretch
+
+TEMPLATE=template.${DEBIAN}64
 
 default: 
 	@echo "Usage: make target "
@@ -171,11 +173,12 @@ template:
 	bridge-utils,sudo,aptitude,ca-certificates,apt-transport-https,\
 	less,screen,ethtool,dstat,sysstat,cgmanager,tzdata,libpam0g,\
 	sudo,gcc,libffi-dev,libssl-dev,git \
-	stretch ${TOP_DIR}/mnt/tmp/ http://ftp.jp.debian.org/debian ; \
+	${DEBIAN} ${TOP_DIR}/mnt/tmp/ http://deb.debian.org/debian ; \
 	echo "root:root" | chpasswd --root ${TOP_DIR}/mnt/tmp/ ; \
 	apt-get -o RootDir=${TOP_DIR}/mnt/tmp/ clean ;\
 	umount ${TOP_DIR}/mnt/tmp ;\
 	fi
+	cp ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/data/template.img
 	cp ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/data/test.img
 
 template-modify: hosts

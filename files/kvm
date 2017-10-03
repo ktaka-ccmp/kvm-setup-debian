@@ -57,10 +57,8 @@ case "$smp" in
 esac
 
 KVM=/kvm
-#qemu_bin=$KVM/qemu/qemu-2.7.0/bin
 qemu_bin=$KVM/qemu/qemu/bin
 qemu=$qemu_bin/qemu-system-x86_64
-#kernel=$KVM/boot/vmlinuz-4.2.3-64kvmg01
 kernel=$KVM/boot/vmlinuz
 initrd=$KVM/boot/initrd-kvm.img
 
@@ -68,7 +66,7 @@ ifup0=$KVM/etc/qemu-ifup
 ifup1=$KVM/etc/qemu-ifup
 
 img=$KVM/data/$id.img
-template=$KVM/data/template.stretch64
+template=$KVM/data/template.img
 
 con=$KVM/console/${id}.sock
 mon=$KVM/monitor/${id}.sock
