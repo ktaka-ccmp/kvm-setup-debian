@@ -2,7 +2,15 @@
 TOP_DIR=/kvm
 SRC_DIR=${TOP_DIR}/SRC/
 
-KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.13.4.tar.xz
+#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.15.tar.xz
+#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.15.0.tar.xz
+#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.15.5.tar.xz
+#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.15.13.tar.xz
+
+#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.14.31.tar.xz
+#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.16.1.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.16.8.tar.xz
+
 KERNEL_FILE=$(notdir ${KERNEL_URI})
 KERNEL=$(KERNEL_FILE:.tar.xz=)
 KVER=$(subst linux-,,${KERNEL})
