@@ -173,14 +173,14 @@ ln -s $qemu /kvm-$id
 -smp $smp,maxcpus=$maxcpus \
 -kernel $kernel -initrd $initrd \
 -append "console=ttyS0,19200n8 ID=$id IDNUM=$id_num HOST=$(hostname) root=/dev/vda net.ifnames=0 biosdevname=0" \
--rtc base=localtime \
+-rtc base=localtime,clock=host \
 --enable-kvm \
 -device virtio-net-pci,netdev=dev1,mac=$mac0,id=net1,vectors=$((nq*2+2)),mq=on,gso=off,guest_tso4=off,guest_tso6=off,guest_ecn=off,guest_ufo=off \
 -netdev tap,id=dev1,vhost=on,script=$ifup0,queues=$nq \
 -serial unix:${con},server,nowait \
 -monitor unix:${mon},server,nowait \
 -nographic -daemonize \
--parallel none -virtioconsole none
+-parallel none
 
 rm /kvm-$id
 }
