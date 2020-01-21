@@ -2,29 +2,22 @@
 TOP_DIR=/kvm
 SRC_DIR=${TOP_DIR}/SRC/
 
-#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.15.tar.xz
-#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.15.0.tar.xz
-#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.15.5.tar.xz
-#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.15.13.tar.xz
-
-#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.14.31.tar.xz
-#KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.16.1.tar.xz
-KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v4.x/linux-4.16.8.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v5.x/linux-5.4.13.tar.xz
 
 KERNEL_FILE=$(notdir ${KERNEL_URI})
 KERNEL=$(KERNEL_FILE:.tar.xz=)
 KVER=$(subst linux-,,${KERNEL})
 KVER_MINOR=-64kvmg01
 
-BUSYBOX_URI=http://busybox.net/downloads/busybox-1.27.2.tar.bz2
+BUSYBOX_URI=http://busybox.net/downloads/busybox-1.31.1.tar.bz2
 BUSYBOX_FILE=$(notdir ${BUSYBOX_URI})
 BUSYBOX=$(BUSYBOX_FILE:.tar.bz2=)
 
-QEMU_URI=http://wiki.qemu-project.org/download/qemu-2.10.0.tar.bz2
+QEMU_URI=https://download.qemu.org/qemu-4.2.0.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
-DEBIAN=stretch
+DEBIAN=buster
 
 TEMPLATE=template.${DEBIAN}64
 
@@ -79,6 +72,7 @@ prep:
 	libattr1-dev \
 	libcap-dev \
 	flex bison \
+	libpixman-1-dev \
 	debian-archive-keyring debian-keyring \
 
 	
@@ -130,8 +124,9 @@ qemu:
 	if [ ! -d ${SRC_DIR}/${QEMU} ]; then \
 	wget -c ${QEMU_URI} ; \
 	tar xf ${QEMU_FILE} -C ${SRC_DIR}; rm ${QEMU_FILE} ; \
-	cp files/patch.qemu01 ${SRC_DIR}/${QEMU}/ ;\
-	(cd ${SRC_DIR}/${QEMU}; patch -p0 <patch.qemu01 ); fi
+#	cp files/patch.qemu01 ${SRC_DIR}/${QEMU}/ ;\
+#	(cd ${SRC_DIR}/${QEMU}; patch -p0 <patch.qemu01 ); \
+	fi
 	(cd ${SRC_DIR}/${QEMU}; \
 	./configure --prefix=${TOP_DIR}/qemu/${QEMU}/ --enable-kvm --enable-virtfs --target-list=x86_64-softmmu ; \
 	time make -j 20 install ;\
@@ -176,10 +171,11 @@ template:
 	mkdir -p ${TOP_DIR}/mnt/tmp ; \
 	mount -o loop ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/mnt/tmp/ ; \
 	debootstrap --include=openssh-server,openssh-client,rsync,pciutils,\
-	tcpdump,strace,libpam-systemd,ca-certificates,telnet,curl,ncurses-term,\
+	tcpdump,strace,ca-certificates,telnet,curl,ncurses-term,\
 	python,python2.7-dev,python-pip,tree,psmisc,\
 	bridge-utils,sudo,aptitude,ca-certificates,apt-transport-https,\
 	less,screen,ethtool,dstat,sysstat,cgmanager,tzdata,libpam0g,\
+	sysvinit-core,sysvinit-utils,\
 	sudo,gcc,libffi-dev,libssl-dev,git \
 	${DEBIAN} ${TOP_DIR}/mnt/tmp/ http://deb.debian.org/debian ; \
 	echo "root:root" | chpasswd --root ${TOP_DIR}/mnt/tmp/ ; \
@@ -192,14 +188,17 @@ template:
 template-modify: hosts
 	if [ -f ${TOP_DIR}/data/${TEMPLATE} ]; then \
 	mount -o loop ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/mnt/tmp/ ; \
+	rm ${TOP_DIR}/mnt/tmp/etc/localtime ; \
 	cp ${TOP_DIR}/mnt/tmp/usr/share/zoneinfo/Japan ${TOP_DIR}/mnt/tmp/etc/localtime ; \
 	echo "Asia/Tokyo" > ${TOP_DIR}/mnt/tmp/etc/timezone ; \
+	echo -e "0.0 0 0.0\n0\nLOCAL" > ${TOP_DIR}/mnt/tmp/etc/adjtime ; \
 	if [ -f ~/.ssh/authorized_keys ]; then \
 	mkdir -p ${TOP_DIR}/mnt/tmp/root/.ssh && chmod 700 ${TOP_DIR}/mnt/tmp/root/ && cp ~/.ssh/authorized_keys ${TOP_DIR}/mnt/tmp/root/.ssh/ ;\
 	fi ; \
 	cp /etc/hosts ${TOP_DIR}/mnt/tmp/etc/ ;\
 	cp files/dot.profile ${TOP_DIR}/mnt/tmp/root/.profile ;\
 	cp files/dot.sshconfig ${TOP_DIR}/mnt/tmp/root/.ssh/config ;\
+	cp files/inittab ${TOP_DIR}/mnt/tmp/etc/inittab ;\
 	umount ${TOP_DIR}/mnt/tmp ;\
 	fi
 	cp ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/data/test.img

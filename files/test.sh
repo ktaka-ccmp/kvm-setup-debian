@@ -1,6 +1,7 @@
 #!/bin/bash
 
-QEMU=/kvm/qemu/qemu-2.6.0/bin/qemu-system-x86_64
+#QEMU=/kvm/qemu/qemu-2.6.0/bin/qemu-system-x86_64
+QEMU=/kvm/qemu/qemu/bin/qemu-system-x86_64
 
 $QEMU \
 -drive file=/kvm/data/test.img,if=virtio \
