@@ -2,18 +2,20 @@
 TOP_DIR=/kvm
 SRC_DIR=${TOP_DIR}/SRC/
 
-KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v5.x/linux-5.17.9.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v5.x/linux-5.15.108.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.2.10.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.1.25.tar.xz
 
 KERNEL_FILE=$(notdir ${KERNEL_URI})
 KERNEL=$(KERNEL_FILE:.tar.xz=)
 KVER=$(subst linux-,,${KERNEL})
 KVER_MINOR=-64kvmg01
 
-BUSYBOX_URI=http://busybox.net/downloads/busybox-1.35.0.tar.bz2
+BUSYBOX_URI=http://busybox.net/downloads/busybox-1.36.0.tar.bz2
 BUSYBOX_FILE=$(notdir ${BUSYBOX_URI})
 BUSYBOX=$(BUSYBOX_FILE:.tar.bz2=)
 
-QEMU_URI=https://download.qemu.org/qemu-7.0.0.tar.bz2
+QEMU_URI=https://download.qemu.org/qemu-7.2.1.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
@@ -200,6 +202,7 @@ template-modify: hosts
 	cp files/dot.profile ${TOP_DIR}/mnt/tmp/root/.profile ;\
 	cp files/dot.sshconfig ${TOP_DIR}/mnt/tmp/root/.ssh/config ;\
 	cp files/inittab ${TOP_DIR}/mnt/tmp/etc/inittab ;\
+	chroot ${TOP_DIR}/mnt/tmp/ bash -c 'aptitude update && aptitude upgrade -y ; aptitude clean' ;\
 	umount ${TOP_DIR}/mnt/tmp ;\
 	fi
 	cp ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/data/test.img
