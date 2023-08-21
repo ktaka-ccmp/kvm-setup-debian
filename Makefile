@@ -5,21 +5,22 @@ SRC_DIR=${TOP_DIR}/SRC/
 KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v5.x/linux-5.15.108.tar.xz
 KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.2.10.tar.xz
 KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.1.25.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.4.11.tar.xz
 
 KERNEL_FILE=$(notdir ${KERNEL_URI})
 KERNEL=$(KERNEL_FILE:.tar.xz=)
 KVER=$(subst linux-,,${KERNEL})
 KVER_MINOR=-64kvmg01
 
-BUSYBOX_URI=http://busybox.net/downloads/busybox-1.36.0.tar.bz2
+BUSYBOX_URI=http://busybox.net/downloads/busybox-1.36.1.tar.bz2
 BUSYBOX_FILE=$(notdir ${BUSYBOX_URI})
 BUSYBOX=$(BUSYBOX_FILE:.tar.bz2=)
 
-QEMU_URI=https://download.qemu.org/qemu-7.2.1.tar.bz2
+QEMU_URI=https://download.qemu.org/qemu-8.0.4.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
-DEBIAN=bullseye
+DEBIAN=bookworm
 
 TEMPLATE=template.${DEBIAN}64
 
@@ -175,7 +176,7 @@ template:
 	mount -o loop ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/mnt/tmp/ ; \
 	debootstrap --include=openssh-server,openssh-client,rsync,pciutils,\
 	tcpdump,strace,ca-certificates,telnet,curl,ncurses-term,\
-	python2,python2.7-dev,python-pip-whl,tree,psmisc,\
+	python3,python3-dev,python3-pip-whl,tree,psmisc,\
 	bridge-utils,sudo,aptitude,ca-certificates,apt-transport-https,\
 	less,screen,ethtool,dstat,sysstat,tzdata,libpam0g,\
 	sysvinit-core,sysvinit-utils,\
