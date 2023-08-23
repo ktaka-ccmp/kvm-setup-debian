@@ -1,7 +1,7 @@
-# kvm-setup-buster
+# kvm-setup-debian
 
 ## What is this?
-This is a setup tool for Debian buster kvm guest virtual machines(VMs) on a Debian buster host.
+This is a setup tool for Debian kvm guest virtual machines(VMs) on a Debian host.
 While there are libvirt compatible tools for debian, I prefere to run kvm a guest VM using simple qemu comandline.
 I compile guest kernel, qemu, prepare initrd, debootstrap root file system, and run the qemu program.
 That's it. All you need to run a kvm VM guest is just to run the single qemu program with appropriate command line options. It's that simple.
@@ -14,7 +14,7 @@ So here is the setup tool for that purpose.
 
 ```
 sudo apt-get install make aptitude git -y
-git clone git@github.com:ktaka-ccmp/kvm-setup-buster.git
+git clone git@github.com:ktaka-ccmp/kvm-setup-debian.git
 sudo make all 
 ```
 
@@ -40,7 +40,7 @@ You need to become root user to run/stop/control VMs.
 The following command run a VM whose host name is v001. 
 
 ```
-# /kvm/sbin/kvm  create v001 
+# /kvm/sbin/kvm  create v001
 booting v001 ....
 ```
 
@@ -48,7 +48,7 @@ You can access v001 both by connecting to console socket(UNIX domain socket) or 
 
 Console connection through socket:
 ```
-# /kvm/sbin/kvm  con v001 
+# /kvm/sbin/kvm  con v001
 
 Debian GNU/Linux 8 v001 ttyS0
 
@@ -64,14 +64,13 @@ individual files in /usr/share/doc/*/copyright.
 Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
 permitted by applicable law.
 root@v001:~# 
-root@buster64:~# 
 ```
 The default ID/pass for vm guest console is root/root. 
 The escape sequence for socket connection is "Ctrl+]". See the "/kvm/sbin/kvm" script.
 
 SSH:
 ```
-root@buster64:~# ssh v001
+# ssh v001
 
 The programs included with the Debian GNU/Linux system are free software;
 the exact distribution terms for each program are described in the
@@ -103,7 +102,7 @@ You can stop a VM either by the "poweroff" command inside the VM or sending shut
 
 poweroff:
 ```
-root@buster64:~# ssh v001
+# ssh v001
 
 The programs included with the Debian GNU/Linux system are free software;
 the exact distribution terms for each program are described in the
@@ -112,18 +111,18 @@ individual files in /usr/share/doc/*/copyright.
 Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
 permitted by applicable law.
 Last login: Wed Oct 28 03:07:58 2015
-root@v001:~# poweroff 
+# poweroff
 Connection to v001 closed by remote host.
 Connection to v001 closed.
 ```
 
 Through the monitor socket:
 ```
-root@buster64:~# /kvm/sbin/kvm  shutdown  v001 
+# /kvm/sbin/kvm  shutdown  v001
 QEMU 2.4.0.1 monitor - type 'help' for more information
 (qemu) system_powerdown
 (qemu) 
-root@buster64:~# 
+#
 ```
 
 ### How to show available VMs.
@@ -131,7 +130,7 @@ root@buster64:~#
 The "/kvm/sbin/kvm list" command will do it.
 
 ```
-root@buster64:~# /kvm/sbin/kvm  list
+# /kvm/sbin/kvm  list
 id      con     mon     img
 test    -       -        -
 v001    -       -        -
@@ -147,18 +146,18 @@ Hence the VM is running.
 You can destroy VM by removing the image file after properly shutdown the VM.
 
 ```
-root@buster64:~# kvm shutdown v001
+# /kvm/sbin/kvm shutdown v001
 QEMU 2.4.0.1 monitor - type 'help' for more information
 (qemu) system_powerdown
 (qemu) 
-root@buster64:~# kvm list 
+# /kvm/sbin/kvm list
 id 	con 	mon 	img
 test	-	-	 -
 v001	-	-	 -
 ```
 
 ```
-root@buster64:~# rm  /kvm/data/v001.img
+# rm  /kvm/data/v001.img
 ```
 
 ## Memory and CPU configuration.
@@ -169,18 +168,18 @@ One can override these by setting the "mem" and "smp" environment variable.
 Here examples of the default VM and the one with 4Gbyte memory and 4 cpus. 
 
 ```
-root@buster64:~# /kvm/sbin/kvm create v001
+# /kvm/sbin/kvm create v001
 booting v001 ....
-root@buster64:~# ssh v001 'egrep -i memto /proc/meminfo ;egrep -i "physical id" /proc/cpuinfo'
+# ssh v001 'egrep -i memto /proc/meminfo ;egrep -i "physical id" /proc/cpuinfo'
 MemTotal:        1022448 kB
 physical id     : 0
 physical id     : 1
 ```
 
 ```
-root@buster64:~# mem=4g smp=4 /kvm/sbin/kvm create v001
+# mem=4g smp=4 /kvm/sbin/kvm create v001
 booting v001 ....
-root@buster64:~# ssh v001 'egrep -i memto /proc/meminfo ;egrep -i "physical id" /proc/cpuinfo'
+# ssh v001 'egrep -i memto /proc/meminfo ;egrep -i "physical id" /proc/cpuinfo'
 MemTotal:        4048112 kB
 physical id     : 0
 physical id     : 1

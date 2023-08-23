@@ -167,7 +167,7 @@ ln -s $qemu /kvm-$id
 
 /kvm-$id \
 -drive file=$img,if=virtio,format=raw \
--virtfs local,id=kvm_boot,path=/kvm/boot,security_model=none,readonly,mount_tag=kvmboot \
+-virtfs local,id=kvm_boot,path=/kvm/boot,security_model=none,readonly=on,mount_tag=kvmboot \
 -cpu host \
 -m $mem \
 -smp $smp,maxcpus=$maxcpus \

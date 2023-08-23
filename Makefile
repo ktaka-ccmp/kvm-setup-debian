@@ -2,22 +2,25 @@
 TOP_DIR=/kvm
 SRC_DIR=${TOP_DIR}/SRC/
 
-KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v5.x/linux-5.4.13.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v5.x/linux-5.15.108.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.2.10.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.1.25.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.4.11.tar.xz
 
 KERNEL_FILE=$(notdir ${KERNEL_URI})
 KERNEL=$(KERNEL_FILE:.tar.xz=)
 KVER=$(subst linux-,,${KERNEL})
 KVER_MINOR=-64kvmg01
 
-BUSYBOX_URI=http://busybox.net/downloads/busybox-1.31.1.tar.bz2
+BUSYBOX_URI=http://busybox.net/downloads/busybox-1.36.1.tar.bz2
 BUSYBOX_FILE=$(notdir ${BUSYBOX_URI})
 BUSYBOX=$(BUSYBOX_FILE:.tar.bz2=)
 
-QEMU_URI=https://download.qemu.org/qemu-4.2.0.tar.bz2
+QEMU_URI=https://download.qemu.org/qemu-8.0.4.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
-DEBIAN=buster
+DEBIAN=bookworm
 
 TEMPLATE=template.${DEBIAN}64
 
@@ -73,6 +76,7 @@ prep:
 	libcap-dev \
 	flex bison \
 	libpixman-1-dev \
+	ninja-build libcap-ng-dev libattr1-dev \
 	debian-archive-keyring debian-keyring \
 
 	
@@ -172,9 +176,9 @@ template:
 	mount -o loop ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/mnt/tmp/ ; \
 	debootstrap --include=openssh-server,openssh-client,rsync,pciutils,\
 	tcpdump,strace,ca-certificates,telnet,curl,ncurses-term,\
-	python,python2.7-dev,python-pip,tree,psmisc,\
+	python3,python3-dev,python3-pip-whl,tree,psmisc,\
 	bridge-utils,sudo,aptitude,ca-certificates,apt-transport-https,\
-	less,screen,ethtool,dstat,sysstat,cgmanager,tzdata,libpam0g,\
+	less,screen,ethtool,dstat,sysstat,tzdata,libpam0g,\
 	sysvinit-core,sysvinit-utils,\
 	sudo,gcc,libffi-dev,libssl-dev,git \
 	${DEBIAN} ${TOP_DIR}/mnt/tmp/ http://deb.debian.org/debian ; \
@@ -199,6 +203,7 @@ template-modify: hosts
 	cp files/dot.profile ${TOP_DIR}/mnt/tmp/root/.profile ;\
 	cp files/dot.sshconfig ${TOP_DIR}/mnt/tmp/root/.ssh/config ;\
 	cp files/inittab ${TOP_DIR}/mnt/tmp/etc/inittab ;\
+	chroot ${TOP_DIR}/mnt/tmp/ bash -c 'aptitude update && aptitude upgrade -y ; aptitude clean' ;\
 	umount ${TOP_DIR}/mnt/tmp ;\
 	fi
 	cp ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/data/test.img
