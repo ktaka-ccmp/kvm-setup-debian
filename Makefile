@@ -16,7 +16,8 @@ BUSYBOX_URI=http://busybox.net/downloads/busybox-1.36.1.tar.bz2
 BUSYBOX_FILE=$(notdir ${BUSYBOX_URI})
 BUSYBOX=$(BUSYBOX_FILE:.tar.bz2=)
 
-QEMU_URI=https://download.qemu.org/qemu-8.0.4.tar.bz2
+#QEMU_URI=https://download.qemu.org/qemu-8.0.4.tar.bz2
+QEMU_URI=https://download.qemu.org/qemu-10.1.3.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
@@ -124,16 +125,22 @@ installkernel:
 	chmod +x ~/bin/installkernel
 
 .PHONY: qemu
-qemu: 
+qemu:
 	if [ ! -d ${SRC_DIR}/${QEMU} ]; then \
 	wget -c ${QEMU_URI} ; \
 	tar xf ${QEMU_FILE} -C ${SRC_DIR}; rm ${QEMU_FILE} ; \
-#	cp files/patch.qemu01 ${SRC_DIR}/${QEMU}/ ;\
-#	(cd ${SRC_DIR}/${QEMU}; patch -p0 <patch.qemu01 ); \
 	fi
 	(cd ${SRC_DIR}/${QEMU}; \
-	./configure --prefix=${TOP_DIR}/qemu/${QEMU}/ --enable-kvm --enable-virtfs --target-list=x86_64-softmmu ; \
+#	rm -rf build; \
+	\
+	./configure \
+	  --prefix=${TOP_DIR}/qemu/${QEMU}/ \
+	  --enable-kvm \
+	  --enable-spice \
+	  --enable-vhost-net \
+	  --enable-virtfs; \
 	time make -j 20 install ;\
+	rm ${TOP_DIR}/qemu/qemu ; \
 	ln -sf ${TOP_DIR}/qemu/${QEMU} ${TOP_DIR}/qemu/qemu ;\
 	)
 
