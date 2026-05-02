@@ -18,7 +18,8 @@ BUSYBOX=$(BUSYBOX_FILE:.tar.bz2=)
 
 #QEMU_URI=https://download.qemu.org/qemu-8.0.4.tar.bz2
 #QEMU_URI=https://download.qemu.org/qemu-10.1.3.tar.bz2
-QEMU_URI=https://download.qemu.org/qemu-10.2.0.tar.bz2
+#QEMU_URI=https://download.qemu.org/qemu-10.2.0.tar.bz2
+QEMU_URI=https://download.qemu.org/qemu-10.2.2.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
@@ -79,6 +80,7 @@ prep:
 	flex bison \
 	libpixman-1-dev \
 	ninja-build libcap-ng-dev libattr1-dev \
+	liburing-dev libaio-dev \
 	debian-archive-keyring debian-keyring \
 
 	
@@ -140,7 +142,9 @@ qemu:
 	  --enable-spice \
 	  --enable-vhost-net \
 	  --enable-numa \
-	  --enable-virtfs; \
+	  --enable-virtfs \
+	  --enable-linux-io-uring \
+	  --enable-linux-aio; \
 	time make -j 20 install ;\
 	rm ${TOP_DIR}/qemu/qemu ; \
 	ln -sf ${TOP_DIR}/qemu/${QEMU} ${TOP_DIR}/qemu/qemu ;\
