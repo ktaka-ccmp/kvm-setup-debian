@@ -6,6 +6,7 @@ KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v5.x/linux-5.15.108.tar.xz
 KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.2.10.tar.xz
 KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.1.25.tar.xz
 KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v6.x/linux-6.4.11.tar.xz
+KERNEL_URI=http://www.kernel.org/pub/linux/kernel/v7.x/linux-7.0.8.tar.xz
 
 KERNEL_FILE=$(notdir ${KERNEL_URI})
 KERNEL=$(KERNEL_FILE:.tar.xz=)
@@ -13,6 +14,7 @@ KVER=$(subst linux-,,${KERNEL})
 KVER_MINOR=-64kvmg01
 
 BUSYBOX_URI=http://busybox.net/downloads/busybox-1.36.1.tar.bz2
+BUSYBOX_URI=http://busybox.net/downloads/busybox-1.38.0.tar.bz2
 BUSYBOX_FILE=$(notdir ${BUSYBOX_URI})
 BUSYBOX=$(BUSYBOX_FILE:.tar.bz2=)
 
@@ -23,7 +25,7 @@ QEMU_URI=https://download.qemu.org/qemu-10.2.2.tar.bz2
 QEMU_FILE=$(notdir ${QEMU_URI})
 QEMU=$(QEMU_FILE:.tar.bz2=)
 
-DEBIAN=bookworm
+DEBIAN=trixie
 
 TEMPLATE=template.${DEBIAN}64
 
@@ -55,8 +57,19 @@ all:
 .PHONY: all kernel  
 
 prep:
+	@yr=$$(date +%Y); \
+	if [ "$$yr" -lt 2024 ] || [ "$$yr" -gt 2100 ]; then \
+	  echo "System clock looks bogus ($$(date)); trying 'hwclock --hctosys'"; \
+	  hwclock --hctosys 2>/dev/null || true; \
+	fi; \
+	yr=$$(date +%Y); \
+	if [ "$$yr" -lt 2024 ] || [ "$$yr" -gt 2100 ]; then \
+	  echo "ERROR: system clock is wrong ($$(date)); apt HTTPS will fail."; \
+	  echo "       Set it manually first, e.g.: sudo date -s 'YYYY-MM-DD HH:MM:SS'"; \
+	  exit 1; \
+	fi
 	mkdir -p ${TOP_DIR}/SRC
-	mkdir -p ${TOP_DIR}/boot	
+	mkdir -p ${TOP_DIR}/boot
 	mkdir -p ${TOP_DIR}/sbin
 	mkdir -p ${TOP_DIR}/data
 	mkdir -p ${TOP_DIR}/console
@@ -64,7 +77,7 @@ prep:
 	mkdir -p ${TOP_DIR}/etc
 	aptitude install -y debootstrap \
 	ca-certificates \
-	libncurses5-dev \
+	libncurses-dev \
 	xz-utils \
 	bc gcc git bzip2 g++ \
 	libtool \
@@ -81,7 +94,12 @@ prep:
 	libpixman-1-dev \
 	ninja-build libcap-ng-dev libattr1-dev \
 	liburing-dev libaio-dev \
-	debian-archive-keyring debian-keyring \
+	python3-venv \
+	libspice-server-dev libspice-protocol-dev \
+	libnuma-dev \
+	ntpsec-ntpdate util-linux-extra \
+	debian-archive-keyring debian-keyring
+	@ntpdate -u pool.ntp.org 2>/dev/null && hwclock --systohc 2>/dev/null || true
 
 	
 
@@ -138,6 +156,9 @@ qemu:
 	\
 	./configure \
 	  --prefix=${TOP_DIR}/qemu/${QEMU}/ \
+	  --target-list=x86_64-softmmu \
+	  --disable-docs \
+	  --disable-guest-agent \
 	  --enable-kvm \
 	  --enable-spice \
 	  --enable-vhost-net \
@@ -191,8 +212,8 @@ template:
 	tcpdump,strace,ca-certificates,telnet,curl,ncurses-term,\
 	python3,python3-dev,python3-pip-whl,tree,psmisc,\
 	bridge-utils,sudo,aptitude,ca-certificates,apt-transport-https,\
-	less,screen,ethtool,dstat,sysstat,tzdata,libpam0g,\
-	sysvinit-core,sysvinit-utils,\
+	less,screen,ethtool,atop,sysstat,tzdata,libpam0g,bsdutils,\
+	sysvinit-core,sysvinit-utils,util-linux-extra,\
 	sudo,gcc,libffi-dev,libssl-dev,git \
 	${DEBIAN} ${TOP_DIR}/mnt/tmp/ http://deb.debian.org/debian ; \
 	echo "root:root" | chpasswd --root ${TOP_DIR}/mnt/tmp/ ; \
@@ -205,10 +226,10 @@ template:
 template-modify: hosts
 	if [ -f ${TOP_DIR}/data/${TEMPLATE} ]; then \
 	mount -o loop ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/mnt/tmp/ ; \
-	rm ${TOP_DIR}/mnt/tmp/etc/localtime ; \
-	cp ${TOP_DIR}/mnt/tmp/usr/share/zoneinfo/Japan ${TOP_DIR}/mnt/tmp/etc/localtime ; \
+	rm -f ${TOP_DIR}/mnt/tmp/etc/localtime ; \
+	cp ${TOP_DIR}/mnt/tmp/usr/share/zoneinfo/Asia/Tokyo ${TOP_DIR}/mnt/tmp/etc/localtime ; \
 	echo "Asia/Tokyo" > ${TOP_DIR}/mnt/tmp/etc/timezone ; \
-	echo -e "0.0 0 0.0\n0\nLOCAL" > ${TOP_DIR}/mnt/tmp/etc/adjtime ; \
+	printf '0.0 0 0.0\n0\nLOCAL\n' > ${TOP_DIR}/mnt/tmp/etc/adjtime ; \
 	if [ -f ~/.ssh/authorized_keys ]; then \
 	mkdir -p ${TOP_DIR}/mnt/tmp/root/.ssh && chmod 700 ${TOP_DIR}/mnt/tmp/root/ && cp ~/.ssh/authorized_keys ${TOP_DIR}/mnt/tmp/root/.ssh/ ;\
 	fi ; \
@@ -216,7 +237,16 @@ template-modify: hosts
 	cp files/dot.profile ${TOP_DIR}/mnt/tmp/root/.profile ;\
 	cp files/dot.sshconfig ${TOP_DIR}/mnt/tmp/root/.ssh/config ;\
 	cp files/inittab ${TOP_DIR}/mnt/tmp/etc/inittab ;\
+	sed -i 's|^\([\t ]*\)touch /var/lock/subsys/atopacctd|\1mkdir -p /var/lock/subsys \&\& touch /var/lock/subsys/atopacctd|' ${TOP_DIR}/mnt/tmp/etc/init.d/atopacct ;\
+	mount -t proc  proc  ${TOP_DIR}/mnt/tmp/proc ;\
+	mount -t sysfs sysfs ${TOP_DIR}/mnt/tmp/sys ;\
+	mount --bind /dev ${TOP_DIR}/mnt/tmp/dev ;\
+	mount -t devpts devpts ${TOP_DIR}/mnt/tmp/dev/pts ;\
 	chroot ${TOP_DIR}/mnt/tmp/ bash -c 'aptitude update && aptitude upgrade -y ; aptitude clean' ;\
+	umount ${TOP_DIR}/mnt/tmp/dev/pts ;\
+	umount ${TOP_DIR}/mnt/tmp/dev ;\
+	umount ${TOP_DIR}/mnt/tmp/sys ;\
+	umount ${TOP_DIR}/mnt/tmp/proc ;\
 	umount ${TOP_DIR}/mnt/tmp ;\
 	fi
 	cp ${TOP_DIR}/data/${TEMPLATE} ${TOP_DIR}/data/test.img
