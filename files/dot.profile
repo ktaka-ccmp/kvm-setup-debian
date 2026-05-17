@@ -6,7 +6,7 @@ if [ "$BASH" ]; then
   fi
 fi
 
-mesg n
+command -v mesg >/dev/null && mesg n
 
 agent="/tmp/ssh-agent-$USER"
 if [ -S "$SSH_AUTH_SOCK" ]; then
